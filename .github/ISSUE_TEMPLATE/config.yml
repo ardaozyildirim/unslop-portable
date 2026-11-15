@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Problem with the skill's method or content
+    url: https://github.com/heydamir/unslop/issues
+    about: This is an unofficial port. Issues about the method, passes or references belong upstream.

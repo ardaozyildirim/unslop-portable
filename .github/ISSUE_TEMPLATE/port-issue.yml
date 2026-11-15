@@ -1,0 +1,33 @@
+name: Port problem
+description: Install scripts, agent folders, browser discovery, or sync with upstream
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This repo is an unofficial port of [heydamir/unslop](https://github.com/heydamir/unslop).
+        If the problem exists in upstream too (the method, the passes, the references), please report it there.
+  - type: dropdown
+    id: agent
+    attributes:
+      label: Agent
+      options: [Claude Code, OpenAI Codex, opencode, Google Antigravity, Other]
+    validations: { required: true }
+  - type: dropdown
+    id: os
+    attributes:
+      label: OS
+      options: [Windows, macOS, Linux]
+    validations: { required: true }
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: Include the command you ran and its output.
+    validations: { required: true }
+  - type: checkboxes
+    id: upstream
+    attributes:
+      label: Checked upstream
+      options:
+        - label: The same thing does not happen with the upstream `unslop` skill
+          required: true

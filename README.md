@@ -39,13 +39,15 @@ Or place the folder yourself:
 
 The skill is named `unslop-portable` on purpose. The upstream skill is named `unslop`, and two skills cannot share a name: installing both would make one overwrite the other, and the two would fight over the same slash command. With a distinct name both live side by side.
 
-If you installed an earlier build of this port that used the name `unslop`, remove it before installing this one:
+The installer takes a few options:
 
-```bash
-rm -rf ~/.agents/skills/unslop ~/.claude/skills/unslop ~/.codex/skills/unslop \
-       ~/.config/opencode/skills/unslop ~/.gemini/config/skills/unslop \
-       ~/.gemini/antigravity-cli/skills/unslop
-```
+| Option (`install.ps1`) | What it does |
+| --- | --- |
+| `--update` (`-Update`) | Refresh the installed copy and the Antigravity copies. Run it after pulling a new version, because Antigravity copies the files instead of linking them. |
+| `--uninstall` (`-Uninstall`) | Remove the installed copy, the links and the copies. |
+| `--dry-run` (`-DryRun`) | Print what would happen without changing anything. |
+
+Earlier builds of this port used the name `unslop`. The installer removes those folders only when they are clearly this port. It never touches the upstream `unslop` skill, so both can stay installed side by side.
 
 ## Use it
 
@@ -54,28 +56,36 @@ rm -rf ~/.agents/skills/unslop ~/.claude/skills/unslop ~/.codex/skills/unslop \
 
 The screen can be a file path, a live URL, or a screenshot.
 
+## Requirements for the scripts
+
+`scripts/snapshot.mjs` and `scripts/story.mjs` need Node 18 or newer and [Playwright](https://playwright.dev) (`npm install -D playwright`, then `npx playwright install chromium`). They use an installed Chrome, Chromium or Edge when they find one (set `CHROME_PATH` to point at a specific browser), otherwise Playwright's own Chromium. The story video also needs `ffmpeg`.
+
 ## What this port changes
 
-The method is unchanged. Every reference file, the example dashboard and the LICENSE are byte-identical to upstream. This port only adds the things upstream needed to exist outside Claude Code:
+The method is unchanged. The reference files, the examples and the LICENSE are taken from upstream as they are; the commit they match is recorded in [`UPSTREAM`](UPSTREAM) and the changes made here are listed in [CHANGELOG.md](CHANGELOG.md). This port adds the things upstream needed to exist outside Claude Code:
 
 - **Cross-agent install.** `install.sh` and `install.ps1` link the skill into the Claude Code, Codex, opencode and Antigravity folders. Antigravity gets a real copy instead of a link, because it does not follow symlinks.
 - **Windows browser discovery.** `scripts/snapshot.mjs` and `scripts/story.mjs` find Chrome and Edge on Windows, and look for `google-chrome-stable` and `chromium-browser` on Linux.
 - **Agent-neutral front matter.** The `compatibility` field and the "Using this skill" section describe how to invoke the skill in each agent.
+- **Repo tooling.** `scripts/sync-upstream.sh`, `scripts/validate.mjs`, CI, and upstream's script tests, adapted to the new folder name. None of it is part of the installed skill.
 - **A distinct name.** The skill, the folder and the repository are called `unslop-portable`, so it can live next to upstream `unslop` without a collision. `CITATION.cff` credits both Damir Sokolovsky and this port, and points at the upstream repository.
 
 Everything else is upstream's work, kept intact.
 
 ## Keeping it in sync with upstream
 
-This is a snapshot of upstream, so it does not follow new commits there. To pull in upstream changes:
+The skill follows upstream through a script, and a weekly workflow runs the same script and opens a pull request when upstream has moved:
 
 ```bash
-git remote add upstream https://github.com/heydamir/unslop
-git fetch upstream
-git rebase upstream/main
+scripts/sync-upstream.sh --check   # report only
+scripts/sync-upstream.sh           # branch sync/upstream-<sha> with the skill changes applied
 ```
 
-The rebase usually needs one manual fix: upstream keeps the skill in `skills/unslop/`, this port keeps it in `skills/unslop-portable/`. Rename the folder in the incoming commit and update the `name:` field in the front matter, or merge the content and reapply this port's `SKILL.md` header.
+It maps upstream's `skills/unslop/` onto `skills/unslop-portable/` and records the absorbed commit in [`UPSTREAM`](UPSTREAM). Conflicts with the port's own changes (the `SKILL.md` header, the browser discovery in the scripts) are left as conflict markers to resolve by hand. Upstream changes outside `skills/` (README, LICENSE, examples) are not synced automatically.
+
+## Contributing
+
+Problems with the method, the passes or the references belong [upstream](https://github.com/heydamir/unslop/issues). Problems with the installers, the agent folders or the sync belong here. Run `node scripts/validate.mjs` before opening a pull request; it also checks that the credit, the license and the notice of changes are still in place.
 
 ## Credits
 
